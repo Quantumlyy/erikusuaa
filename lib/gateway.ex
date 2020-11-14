@@ -13,6 +13,6 @@ defmodule Gateway do
 
   """
   def hello do
-    IO.puts :world
+    :world
   end
 end

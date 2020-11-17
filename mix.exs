@@ -27,9 +27,10 @@ defmodule Gateway.MixProject do
   defp deps do
     [
       {:gun, "~> 1.3"},
+
       {:amqp, "~> 1.6.0"},
-      {:redix, "~> 1.0"},
-      {:toml, "~> 0.6.2"},
+
+      {:xandra, "~> 0.13.1"},
 
       {:credo, "~> 1.5.1", only: [:dev, :test], runtime: false},
     ]

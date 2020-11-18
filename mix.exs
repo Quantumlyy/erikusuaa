@@ -37,6 +37,7 @@ defmodule Gateway.MixProject do
 
       {:recon, "~> 2.5.1", override: true},
       {:credo, "~> 1.5.1", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.0", only: [:dev], runtime: false}
     ]
   end
 end

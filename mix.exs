@@ -6,7 +6,7 @@ defmodule Gateway.MixProject do
       app: :gateway,
       version: "0.1.0",
       elixir: "~> 1.11",
-      elixirc_paths: elixirc_paths(Mix.env),
+      elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       deps: deps()
     ]
@@ -27,14 +27,10 @@ defmodule Gateway.MixProject do
   defp deps do
     [
       {:gun, "~> 1.3"},
-
       {:amqp, "~> 1.6.0"},
       {:manifold, "~> 1.4"},
-
       {:xandra, "~> 0.13.1"},
-
       {:instruments, "~> 2.1"},
-
       {:recon, "~> 2.5.1", override: true},
       {:credo, "~> 1.5.1", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false}

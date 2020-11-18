@@ -28,6 +28,7 @@ defmodule Gateway.MixProject do
   defp deps do
     [
       {:gun, "~> 1.3"},
+      {:poison, "~> 4.0"},
       {:amqp, "~> 1.6.0"},
       {:manifold, "~> 1.4"},
       {:xandra, "~> 0.13.1"},

@@ -16,8 +16,7 @@ defmodule Gateway.Session do
   def handle_continue([_gateway, shard_num], nil) do
     gateway = "gateway.discord.gg"
     # TODO(Quantum): Determine url from api response
-    {:ok, worker} =
-      :gun.open(:binary.bin_to_list(gateway), 443, %{protocols: [:http]})
+    {:ok, worker} = :gun.open(:binary.bin_to_list(gateway), 443, %{protocols: [:http]})
 
     {:ok, :http} = :gun.await_up(worker, @timeout)
     # TODO: support zlib

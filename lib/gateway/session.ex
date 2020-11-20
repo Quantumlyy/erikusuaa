@@ -1,8 +1,9 @@
 defmodule Gateway.Session do
   use GenServer
   require Logger
-  alias Gateway.{Constants, Struct.WSState}
+  alias Gateway.{Payload, Struct.WSState}
 
+  @gw_qs "/?v=8&compress=zlib-stream&encoding=etf"
   @timeout 10_000
 
   @impl true
@@ -19,17 +20,20 @@ defmodule Gateway.Session do
     {:ok, worker} = :gun.open(:binary.bin_to_list(gateway), 443, %{protocols: [:http]})
 
     {:ok, :http} = :gun.await_up(worker, @timeout)
-    # TODO: support zlib
-    stream = :gun.ws_upgrade(worker, "/?v=8&encoding=etf")
+    stream = :gun.ws_upgrade(worker, @gw_qs)
     await_ws_upgrade(worker, stream)
+
+    zlib_context = :zlib.open()
+    :zlib.inflateInit(zlib_context)
 
     state = %WSState{
       conn_pid: self(),
       conn: worker,
       shard_num: shard_num,
-      gateway: gateway <> "/?v=8&encoding=etf",
+      gateway: gateway <> @gw_qs,
       last_heartbeat_ack: DateTime.utc_now(),
-      heartbeat_ack: true
+      heartbeat_ack: true,
+      zlib_ctx: zlib_context
     }
 
     {:noreply, state}
@@ -37,22 +41,73 @@ defmodule Gateway.Session do
 
   @impl true
   def handle_info({:gun_ws, _worker, _stream, {:binary, frame}}, state) do
-    # zlib support shall be implemented here
-    frame = :erlang.binary_to_term(frame)
-    IO.inspect(frame)
-    state = process_frame(frame, state)
+    payload = state.zlib_ctx
+      |> :zlib.inflate(frame)
+      |> :erlang.iolist_to_binary()
+      |> :erlang.binary_to_term()
 
-    {:noreply, state}
+    state = %{state | seq: payload.s || state.seq}
+
+    frame = process_frame(payload, state)
+
+    case frame do
+      {new_state, reply} ->
+        :ok = :gun.ws_send(state.conn, {:binary, reply})
+        {:noreply, new_state}
+
+      new_state ->
+        {:noreply, new_state}
+    end
   end
 
-  # HELLO
-  def process_frame(%{op: 10} = frame, state) do
-    # stuff
+  # HEARTBEAT
+  def process_frame(%{op: 1} = _payload, state) do
+    {state, Payload.heartbeat_payload(state.seq)}
+  end
+
+    # HELLO
+  def process_frame(%{op: 10} = payload, state) do
+    state = %{
+      state
+      | heartbeat_interval: payload.d.heartbeat_interval
+    }
+
+    GenServer.cast(state.conn_pid, %{op: 1})
+
+    if session_exists?(state) do
+      Logger.info("RESUMING")
+      {state, Payload.resume_payload(state)}
+    else
+      Logger.info("IDENTIFYING")
+      {state, Payload.identity_payload(state)}
+    end
   end
 
   def process_frame(frame, state) do
     # some general stuff that the gateway doesn't have to bother with
-    state
+    {state}
+  end
+
+  @impl true
+  def handle_cast(%{op: 1} = _payload, %{heartbeat_ack: false, heartbeat_ref: timer_ref} = state) do
+    Logger.warn("heartbeat_ack not received in time, disconnecting")
+    {:ok, :cancel} = :timer.cancel(timer_ref)
+    :gun.ws_send(state.conn, :close)
+    {:noreply, state}
+  end
+
+  @impl true
+  def handle_cast(%{op: 1} = payload, state) do
+    {:ok, ref} =
+      :timer.apply_after(state.heartbeat_interval, :gen_server, :cast, [
+        state.conn_pid,
+        payload
+      ])
+
+    :ok = :gun.ws_send(state.conn, {:binary, Payload.heartbeat_payload(state.seq)})
+
+    {:noreply,
+     %{state | heartbeat_ref: ref, heartbeat_ack: false, last_heartbeat_send: DateTime.utc_now()}}
   end
 
   defp await_ws_upgrade(worker, stream) do
@@ -70,5 +125,9 @@ defmodule Gateway.Session do
 
         exit(:timeout)
     end
+  end
+
+  def session_exists?(state) do
+    not is_nil(state.session)
   end
 end

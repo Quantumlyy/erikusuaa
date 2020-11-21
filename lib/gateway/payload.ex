@@ -1,7 +1,7 @@
 defmodule Gateway.Payload do
   @moduledoc false
 
-  alias Gateway.{Constants, Config}
+  alias Gateway.{Config, Constants}
 
   @large_threshold 250
 

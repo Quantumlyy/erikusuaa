@@ -1,4 +1,6 @@
 defmodule Gateway.Session do
+  @moduledoc false
+
   use GenServer
   require Logger
   alias Gateway.{Constants, Payload, Struct.WSState}

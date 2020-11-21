@@ -1,4 +1,6 @@
 defmodule Gateway.Constants do
+  @moduledoc false
+
   @opcodes %{
     "DISPATCH" => 0,
     "HEARTBEAT" => 1,

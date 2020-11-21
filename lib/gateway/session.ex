@@ -1,7 +1,7 @@
 defmodule Gateway.Session do
   use GenServer
   require Logger
-  alias Gateway.{Payload, Struct.WSState}
+  alias Gateway.{Constants, Payload, Struct.WSState}
 
   @gw_qs "/?v=8&compress=zlib-stream&encoding=etf"
   @timeout 10_000
@@ -84,7 +84,7 @@ defmodule Gateway.Session do
   end
 
   def process_frame(frame, state) do
-    # some general stuff that the gateway doesn't have to bother with
+    Logger.warn("UNHANDLED GATEWAY EVENT #{Constants.atom_from_opcode(frame.op)}")
     {state}
   end
 

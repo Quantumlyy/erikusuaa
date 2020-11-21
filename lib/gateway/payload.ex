@@ -25,7 +25,7 @@ defmodule Gateway.Payload do
         "$referring_domain" => ""
       },
       "compress" => false,
-      "large_threshold" => @large_threshold,
+      "large_threshold" => @large_threshold
       # "shard" => [state.shard_num, Util.num_shards()],
       # "intents" => Intents.get_enabled_intents()
     }

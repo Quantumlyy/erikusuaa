@@ -41,7 +41,8 @@ defmodule Gateway.Session do
 
   @impl true
   def handle_info({:gun_ws, _worker, _stream, {:binary, frame}}, state) do
-    payload = state.zlib_ctx
+    payload =
+      state.zlib_ctx
       |> :zlib.inflate(frame)
       |> :erlang.iolist_to_binary()
       |> :erlang.binary_to_term()
@@ -65,7 +66,7 @@ defmodule Gateway.Session do
     {state, Payload.heartbeat_payload(state.seq)}
   end
 
-    # HELLO
+  # HELLO
   def process_frame(%{op: 10} = payload, state) do
     state = %{
       state

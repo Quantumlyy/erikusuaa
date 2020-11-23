@@ -13,6 +13,8 @@ defmodule Gateway.Application do
       # {Gateway.Worker, arg}
     ]
 
+    GenServer.start_link(Gateway.Session, ["", 1])
+
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Gateway.Supervisor]

@@ -63,9 +63,45 @@ defmodule Gateway.Session do
     end
   end
 
+  def handle_info({:gun_ws, _conn, _stream, {:close, errno, reason}}, state) do
+    Logger.info("Shard websocket closed (errno #{errno}, reason #{inspect(reason)})")
+    {:noreply, state}
+  end
+
+  def handle_info(
+        {:gun_down, _conn, _proto, _reason, _killed_streams, _unprocessed_streams},
+        state
+      ) do
+    :timer.cancel(state.heartbeat_ref)
+    {:noreply, state}
+  end
+
+  def handle_info({:gun_up, worker, _proto}, state) do
+    :ok = :zlib.inflateReset(state.zlib_ctx)
+    stream = :gun.ws_upgrade(worker, @gw_qs)
+    await_ws_upgrade(worker, stream)
+    Logger.warn("Reconnected after connection broke")
+    {:noreply, %{state | heartbeat_ack: true}}
+  end
+
+  # DISPATCH
+  def process_frame(%{op: 0} = payload, state) do
+    if payload.t == "READY" do
+      %{state | session: payload.d.session_id}
+    else
+      state
+    end
+  end
+
   # HEARTBEAT
   def process_frame(%{op: 1} = _payload, state) do
     {state, Payload.heartbeat_payload(state.seq)}
+  end
+
+  # INVALID_SESSION
+  def process_frame(%{op: 9} = _payload, state) do
+    Logger.info("INVALID_SESSION")
+    {state, Payload.identity_payload(state)}
   end
 
   # HELLO
@@ -86,8 +122,14 @@ defmodule Gateway.Session do
     end
   end
 
-  def process_frame(frame, state) do
-    Logger.warn("UNHANDLED GATEWAY EVENT #{Constants.atom_from_opcode(frame.op)}")
+  # HEARTBEAT_ACK
+  def process_frame(%{op: 11} = _payload, state) do
+    Logger.debug("HEARTBEAT_ACK")
+    %{state | last_heartbeat_ack: DateTime.utc_now(), heartbeat_ack: true}
+  end
+
+  def process_frame(payload, state) do
+    Logger.warn("UNHANDLED GATEWAY EVENT #{Constants.atom_from_opcode(payload.op)}")
     {state}
   end
 

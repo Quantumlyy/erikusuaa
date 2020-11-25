@@ -28,6 +28,7 @@ defmodule Erikusuaa.Payload do
       "large_threshold" => @large_threshold,
       # TODO(QuantumlyTangled): Dynamic shard count
       "shard" => [state.shard_num, 2],
+      # TODO(QuantumlyTangled): Dynamic intents
       "intents" => 512
     }
     |> build_payload("IDENTIFY")

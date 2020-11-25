@@ -1,6 +1,15 @@
 defmodule Erikusuaa.Constants do
   @moduledoc false
 
+  @spec base_url :: <<_::208>>
+  def base_url, do: "https://discord.com/api/v8"
+  @spec cdn_url :: <<_::208>>
+  def cdn_url, do: "https://cdn.discordapp.com"
+  @spec gateway :: <<_::64>>
+  def gateway, do: "/gateway"
+  @spec gateway_bot :: <<_::96>>
+  def gateway_bot, do: "/gateway/bot"
+
   @opcodes %{
     "DISPATCH" => 0,
     "HEARTBEAT" => 1,

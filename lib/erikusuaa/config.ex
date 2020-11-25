@@ -1,4 +1,4 @@
-defmodule Gateway.Config do
+defmodule Erikusuaa.Config do
   @moduledoc false
 
   def bot_config, do: c(:bot)
@@ -7,5 +7,5 @@ defmodule Gateway.Config do
   def amqp_config, do: c(:bot)
   def amqp_url, do: amqp_config() |> Keyword.get(:url)
 
-  defp c(k) when is_atom(k), do: Application.get_env(:gateway, k)
+  defp c(k) when is_atom(k), do: Application.get_env(:erikusuaa, k)
 end

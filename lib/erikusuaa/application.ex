@@ -1,4 +1,4 @@
-defmodule Gateway.Application do
+defmodule Erikusuaa.Application do
   # See https://hexdocs.pm/elixir/Application.html
   # for more information on OTP Applications
   @moduledoc false
@@ -9,15 +9,16 @@ defmodule Gateway.Application do
   @impl true
   def start(_type, _args) do
     children = [
-      # Starts a worker by calling: Gateway.Worker.start_link(arg)
-      # {Gateway.Worker, arg}
+      # Starts a worker by calling: Erikusuaa.Worker.start_link(arg)
+      # {Erikusuaa.Worker, arg}
     ]
 
-    GenServer.start_link(Gateway.Session, ["", 1])
+    GenServer.start_link(Erikusuaa.Session, ["", 0])
+    GenServer.start_link(Erikusuaa.Session, ["", 1])
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
-    opts = [strategy: :one_for_one, name: Gateway.Supervisor]
+    opts = [strategy: :one_for_one, name: Erikusuaa.Supervisor]
     Supervisor.start_link(children, opts)
   end
 end

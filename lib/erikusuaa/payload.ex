@@ -1,7 +1,7 @@
-defmodule Gateway.Payload do
+defmodule Erikusuaa.Payload do
   @moduledoc false
 
-  alias Gateway.{Config, Constants}
+  alias Erikusuaa.{Config, Constants}
 
   @large_threshold 250
 
@@ -12,21 +12,22 @@ defmodule Gateway.Payload do
   end
 
   @doc false
-  def identity_payload(_state) do
+  def identity_payload(state) do
     {os, name} = :os.type()
 
     %{
       "token" => Config.bot_token(),
       "properties" => %{
         "$os" => Atom.to_string(os) <> " " <> Atom.to_string(name),
-        "$browser" => "Gateway",
-        "$device" => "Gateway",
+        "$browser" => "Erikusuaa",
+        "$device" => "Erikusuaa",
         "$referrer" => "",
         "$referring_domain" => ""
       },
       "compress" => false,
       "large_threshold" => @large_threshold,
-      # "shard" => [state.shard_num, Util.num_shards()],
+      # TODO(QuantumlyTangled): Dynamic shard count
+      "shard" => [state.shard_num, 2],
       "intents" => 512
     }
     |> build_payload("IDENTIFY")

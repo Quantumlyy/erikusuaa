@@ -1,6 +1,6 @@
-defmodule Gateway do
+defmodule Erikusuaa do
   @moduledoc """
-  Documentation for `Gateway`.
+  Documentation for `Erikusuaa`.
   """
 
   @doc """
@@ -8,7 +8,7 @@ defmodule Gateway do
 
   ## Examples
 
-      iex> Gateway.hello()
+      iex> Erikusuaa.hello()
       :world
 
   """

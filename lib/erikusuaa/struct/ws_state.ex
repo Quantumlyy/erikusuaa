@@ -1,4 +1,4 @@
-defmodule Gateway.Struct.WSState do
+defmodule Erikusuaa.Struct.WSState do
   @moduledoc """
   Struct representing the current WS state.
   """

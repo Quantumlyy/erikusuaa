@@ -1,6 +1,6 @@
 # Copyright (c) 2019 amy, All rights reserved.
 
-defmodule Gateway.Utils do
+defmodule Erikusuaa.Utils do
   @moduledoc """
   Some utility functions that don't really belong in any one place.
   """

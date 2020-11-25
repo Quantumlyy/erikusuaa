@@ -1,4 +1,4 @@
-defmodule Gateway.Constants do
+defmodule Erikusuaa.Constants do
   @moduledoc false
 
   @opcodes %{
@@ -17,10 +17,12 @@ defmodule Gateway.Constants do
   }
   def opcodes, do: @opcodes
 
+  @spec opcode_from_name(String.t()) :: number
   def opcode_from_name(event) do
     @opcodes[event]
   end
 
+  @spec atom_from_opcode(number) :: atom
   def atom_from_opcode(opcode) do
     {k, _} = Enum.find(@opcodes, fn {_, v} -> v == opcode end)
     k |> String.downcase() |> String.to_atom()

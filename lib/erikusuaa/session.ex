@@ -1,9 +1,9 @@
-defmodule Gateway.Session do
+defmodule Erikusuaa.Session do
   @moduledoc false
 
   use GenServer
   require Logger
-  alias Gateway.{Constants, Payload, Struct.WSState}
+  alias Erikusuaa.{Constants, Payload, Struct.WSState}
 
   @gw_qs "/?v=8&compress=zlib-stream&encoding=etf"
   @timeout 10_000

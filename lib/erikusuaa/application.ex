@@ -13,8 +13,8 @@ defmodule Erikusuaa.Application do
       # {Erikusuaa.Worker, arg}
     ]
 
-    GenServer.start_link(Erikusuaa.Session, ["", 0])
-    GenServer.start_link(Erikusuaa.Session, ["", 1])
+    GenServer.start_link(Erikusuaa.Session, ["gateway.discord.gg", 0])
+    GenServer.start_link(Erikusuaa.Session, ["gateway.discord.gg", 1])
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options

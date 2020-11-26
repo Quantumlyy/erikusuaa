@@ -3,7 +3,7 @@ defmodule Erikusuaa.Session do
 
   use GenServer
   require Logger
-  alias Erikusuaa.{Constants, Payload, Struct.WSState}
+  alias Erikusuaa.{Constants, Payload, Struct.WSState, Utils}
 
   @gw_qs "/?v=8&compress=zlib-stream&encoding=etf"
   @timeout 10_000
@@ -15,10 +15,7 @@ defmodule Erikusuaa.Session do
   end
 
   @impl true
-  # cont being whatever the fuck idk
-  def handle_continue([_gateway, shard_num], nil) do
-    gateway = "gateway.discord.gg"
-    # TODO(Quantum): Determine url from api response
+  def handle_continue([gateway, shard_num], nil) do
     {:ok, worker} = :gun.open(:binary.bin_to_list(gateway), 443, %{protocols: [:http]})
 
     {:ok, :http} = :gun.await_up(worker, @timeout)
@@ -41,6 +38,7 @@ defmodule Erikusuaa.Session do
     {:noreply, state}
   end
 
+  # region Handle WS Connectivity
   @impl true
   def handle_info({:gun_ws, _worker, _stream, {:binary, frame}}, state) do
     payload =
@@ -63,11 +61,13 @@ defmodule Erikusuaa.Session do
     end
   end
 
+  @impl true
   def handle_info({:gun_ws, _conn, _stream, {:close, errno, reason}}, state) do
     Logger.info("Shard websocket closed (errno #{errno}, reason #{inspect(reason)})")
     {:noreply, state}
   end
 
+  @impl true
   def handle_info(
         {:gun_down, _conn, _proto, _reason, _killed_streams, _unprocessed_streams},
         state
@@ -76,6 +76,7 @@ defmodule Erikusuaa.Session do
     {:noreply, state}
   end
 
+  @impl true
   def handle_info({:gun_up, worker, _proto}, state) do
     :ok = :zlib.inflateReset(state.zlib_ctx)
     stream = :gun.ws_upgrade(worker, @gw_qs)
@@ -84,6 +85,9 @@ defmodule Erikusuaa.Session do
     {:noreply, %{state | heartbeat_ack: true}}
   end
 
+  # endregion Handle WS Connectivity
+
+  # region Event Handling
   # DISPATCH
   def process_frame(%{op: 0} = payload, state) do
     if payload.t == "READY" do
@@ -99,8 +103,8 @@ defmodule Erikusuaa.Session do
   end
 
   # INVALID_SESSION
-  def process_frame(%{op: 9} = _payload, state) do
-    Logger.info("INVALID_SESSION")
+  def process_frame(%{op: 9} = payload, state) do
+    Logger.info(Constants.name_of_opcode(payload.op))
     {state, Payload.identity_payload(state)}
   end
 
@@ -113,7 +117,7 @@ defmodule Erikusuaa.Session do
 
     GenServer.cast(state.conn_pid, %{op: 1})
 
-    if session_exists?(state) do
+    if Utils.session_exists?(state) do
       Logger.info("RESUMING")
       {state, Payload.resume_payload(state)}
     else
@@ -123,16 +127,20 @@ defmodule Erikusuaa.Session do
   end
 
   # HEARTBEAT_ACK
-  def process_frame(%{op: 11} = _payload, state) do
-    Logger.debug("HEARTBEAT_ACK")
+  def process_frame(%{op: 11} = payload, state) do
+    Logger.debug(Constants.name_of_opcode(payload.op))
     %{state | last_heartbeat_ack: DateTime.utc_now(), heartbeat_ack: true}
   end
 
+  # Fallback
   def process_frame(payload, state) do
-    Logger.warn("UNHANDLED GATEWAY EVENT #{Constants.atom_from_opcode(payload.op)}")
-    {state}
+    Logger.warn("UNHANDLED GATEWAY EVENT \"#{Constants.name_of_opcode(payload.op)}\"")
+    state
   end
 
+  # endregion Event Handling
+
+  # region HEARTBEAT Handling
   @impl true
   def handle_cast(%{op: 1} = _payload, %{heartbeat_ack: false, heartbeat_ref: timer_ref} = state) do
     Logger.warn("heartbeat_ack not received in time, disconnecting")
@@ -155,6 +163,8 @@ defmodule Erikusuaa.Session do
      %{state | heartbeat_ref: ref, heartbeat_ack: false, last_heartbeat_send: DateTime.utc_now()}}
   end
 
+  # endregion HEARTBEAT Handling
+
   defp await_ws_upgrade(worker, stream) do
     receive do
       {:gun_upgrade, ^worker, ^stream, [<<"websocket">>], _headers} ->
@@ -170,9 +180,5 @@ defmodule Erikusuaa.Session do
 
         exit(:timeout)
     end
-  end
-
-  def session_exists?(state) do
-    not is_nil(state.session)
   end
 end

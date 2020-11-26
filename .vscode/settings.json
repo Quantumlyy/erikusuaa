@@ -1,0 +1,9 @@
+{
+  "region-marker.languages": {
+    // Language id
+    "elixir": {
+      "start": "#region",
+      "end": "#endregion"
+    }
+  }
+}

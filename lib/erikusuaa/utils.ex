@@ -26,4 +26,8 @@ defmodule Erikusuaa.Utils do
         fast_list_concat([a], b)
     end
   end
+
+  def session_exists?(state) do
+    not is_nil(state.session)
+  end
 end

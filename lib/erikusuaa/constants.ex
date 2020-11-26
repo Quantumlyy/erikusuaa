@@ -36,4 +36,10 @@ defmodule Erikusuaa.Constants do
     {k, _} = Enum.find(@opcodes, fn {_, v} -> v == opcode end)
     k |> String.downcase() |> String.to_atom()
   end
+
+  @spec name_of_opcode(number) :: String.t()
+  def name_of_opcode(opcode) do
+    {k, _} = Enum.find(@opcodes, fn {_, v} -> v == opcode end)
+    k
+  end
 end

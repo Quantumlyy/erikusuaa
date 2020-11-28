@@ -6,19 +6,22 @@ defmodule Erikusuaa.Application do
   use Application
   require Logger
 
+  alias Erikusuaa.{Shard, Config}
+
   @impl true
   def start(_type, _args) do
     children = [
-      # Starts a worker by calling: Erikusuaa.Worker.start_link(arg)
-      # {Erikusuaa.Worker, arg}
-    ]
 
-    GenServer.start_link(Erikusuaa.Session, ["gateway.discord.gg", 0])
-    GenServer.start_link(Erikusuaa.Session, ["gateway.discord.gg", 1])
+    ] ++ for i <- 0..(Config.bot_shard_count() - 1), do: create_worker("gateway.discord.gg", i)
 
-    # See https://hexdocs.pm/elixir/Supervisor.html
-    # for other strategies and supported options
-    opts = [strategy: :one_for_one, name: Erikusuaa.Supervisor]
-    Supervisor.start_link(children, opts)
+    # Supervisor.init(children, strategy: :one_for_one, max_restarts: 3, max_seconds: 60)
+    Supervisor.start_link(children, strategy: :one_for_one)
+  end
+
+  def create_worker(gateway, shard_num) do
+    Supervisor.child_spec(
+      {Shard, [gateway, shard_num]},
+      id: shard_num
+    )
   end
 end

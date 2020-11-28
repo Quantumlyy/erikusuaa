@@ -8,6 +8,10 @@ defmodule Erikusuaa.Session do
   @gw_qs "/?v=8&compress=zlib-stream&encoding=etf"
   @timeout 10_000
 
+  def start_link([gateway, shard_num]) do
+    GenServer.start_link(__MODULE__, [gateway, shard_num])
+  end
+
   @impl true
   # init_arg is pretty much initial state
   def init([_gateway, _shard_num] = init_arg) do

@@ -28,7 +28,7 @@ defmodule Erikusuaa.Payload do
       "compress" => false,
       "large_threshold" => @large_threshold,
       # TODO(QuantumlyTangled): Dynamic shard count
-      "shard" => [state.shard_num, Config.bot_shard_count()],
+      "shard" => [state.shard_num, Config.gateway_shard_count()],
       # TODO(QuantumlyTangled): Dynamic intents
       "intents" => 512
     }

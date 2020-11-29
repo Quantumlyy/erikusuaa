@@ -11,11 +11,14 @@ defmodule Erikusuaa.Application do
   @impl true
   def start(_type, _args) do
     children = [
+      {DynamicSupervisor, strategy: :one_for_one, name: :clusterSupervisor}
+    ]
 
-    ] ++ for i <- 0..(Config.bot_shard_count() - 1), do: create_worker("gateway.discord.gg", i)
+    start = Supervisor.start_link(children, strategy: :one_for_one)
 
-    # Supervisor.init(children, strategy: :one_for_one, max_restarts: 3, max_seconds: 60)
-    Supervisor.start_link(children, strategy: :one_for_one)
+    for i <- 0..(Config.gateway_shard_count() - 1), do: add_worker("gateway.discord.gg", i)
+
+    start
   end
 
   def create_worker(gateway, shard_num) do
@@ -23,5 +26,10 @@ defmodule Erikusuaa.Application do
       {Shard, [gateway, shard_num]},
       id: shard_num
     )
+  end
+
+  defp add_worker(gateway, shard_num) do
+    DynamicSupervisor.start_child(:clusterSupervisor, create_worker(gateway, shard_num))
+    :timer.sleep(Config.gateway_identify_delay())
   end
 end

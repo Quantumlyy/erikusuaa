@@ -3,6 +3,7 @@ defmodule Erikusuaa.Broker do
 
   use GenServer
   require Logger
+  alias Erikusuaa.{Struct.AMQpState}
 
   @impl true
   # init_arg is pretty much initial state
@@ -12,5 +13,10 @@ defmodule Erikusuaa.Broker do
 
   @impl true
   def handle_continue(_init_arg, nil) do
+    state = %AMQpState{
+      conn_pid: self()
+    }
+
+    {:noreply, state}
   end
 end

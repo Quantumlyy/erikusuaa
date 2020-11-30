@@ -94,6 +94,13 @@ defmodule Erikusuaa.Session do
   # region Event Handling
   # DISPATCH
   def process_frame(%{op: 0} = payload, state) do
+    # Manifold.send(Erikusuaa.Shard.Broker, {:send, payload})
+    Logger.info Supervisor.which_children(Erikusuaa.Gateway)
+    Logger.info Supervisor.which_children(:clusterSupervisor)
+    Supervisor.which_children(Erikusuaa.Gateway)
+      |> Enum.find(nil, fn x -> elem(x, 0) == Erikusuaa.Broker end)
+      |> elem(1)
+      |> Manifold.send({:send, payload})
     if payload.t == "READY" do
       %{state | session: payload.d.session_id}
     else

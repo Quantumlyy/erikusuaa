@@ -6,7 +6,7 @@ config :erikusuaa,
   ],
   gateway: [
     shard_count: System.get_env("GATEWAY_SHARD_COUNT"),
-    identify_delay: String.to_integer(System.get_env("GATEWAY_IDENTIFY_DELAY") || 5100)
+    identify_delay: String.to_integer(System.get_env("GATEWAY_IDENTIFY_DELAY") || "5100")
   ],
   amqp: [
     url: System.get_env("AMQP_URL") || "amqp://localhost:5672"

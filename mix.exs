@@ -27,12 +27,24 @@ defmodule Erikusuaa.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      #region interactivity
       {:gun, "~> 1.3"},
       {:poison, "~> 4.0"},
+      #endregion interactivity
+
+      #region process communication
       {:manifold, "~> 1.4"},
+      #endregion process communication
+
+      #region caching
       {:xandra, "~> 0.13.1"},
+      #endregion cachine
+
+      #region stats tracking
       {:instruments, "~> 2.1"},
       {:recon, "~> 2.5.1", override: true},
+      #endregion stats tracking
+
       {:credo, "~> 1.5.1", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false}
     ]

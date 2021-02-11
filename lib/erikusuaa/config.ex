@@ -8,8 +8,5 @@ defmodule Erikusuaa.Config do
   def gateway_shard_count, do: gateway_config() |> Keyword.get(:shard_count)
   def gateway_identify_delay, do: gateway_config() |> Keyword.get(:identify_delay)
 
-  def amqp_config, do: c(:amqp)
-  def amqp_url, do: amqp_config() |> Keyword.get(:url)
-
   defp c(k) when is_atom(k), do: Application.get_env(:erikusuaa, k)
 end

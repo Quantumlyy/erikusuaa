@@ -11,7 +11,8 @@ defmodule Erikusuaa.Application do
   @impl true
   def start(_type, _args) do
     children = [
-      {DynamicSupervisor, strategy: :one_for_one, name: :clusterSupervisor}
+      {DynamicSupervisor, strategy: :one_for_one, name: :clusterSupervisor},
+      {Erikusuaa.Broker, name: Erikusuaa.Shard.Broker}
     ]
 
     start = Supervisor.start_link(children, strategy: :one_for_one, name: Erikusuaa.Gateway)

@@ -2,7 +2,7 @@ defmodule Erikusuaa.Payload do
   @moduledoc false
 
   require Logger
-  alias Erikusuaa.{Config, Constants}
+  alias Erikusuaa.{Config, Constants, Shard.Intents}
 
   @large_threshold 250
 
@@ -29,8 +29,7 @@ defmodule Erikusuaa.Payload do
       "large_threshold" => @large_threshold,
       # TODO(QuantumlyTangled): Dynamic shard count
       "shard" => [state.shard_num, Config.gateway_shard_count()],
-      # TODO(QuantumlyTangled): Dynamic intents
-      "intents" => 512
+      "intents" => Intents.get_enabled_intents()
     }
     |> build_payload("IDENTIFY")
   end
